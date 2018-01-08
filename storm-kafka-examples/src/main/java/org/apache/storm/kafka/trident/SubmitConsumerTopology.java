@@ -11,6 +11,7 @@ import org.apache.storm.trident.TridentState;
 import org.apache.storm.trident.TridentTopology;
 import org.apache.storm.trident.operation.BaseFilter;
 import org.apache.storm.trident.operation.builtin.Count;
+import org.apache.storm.trident.operation.builtin.Debug;
 import org.apache.storm.trident.operation.builtin.FilterNull;
 import org.apache.storm.trident.operation.builtin.MapGet;
 import org.apache.storm.trident.spout.ITridentDataSource;
@@ -78,7 +79,8 @@ public class SubmitConsumerTopology {
     private static TridentState addTridentState(TridentTopology tridentTopology, ITridentDataSource tridentSpout) {
         final Stream spoutStream = tridentTopology.newStream("spout1", tridentSpout).parallelismHint(6);
 
-        return    spoutStream.each(new Fields("sentence"), new Split(), new Fields("word"))
+        return    spoutStream.each(spoutStream.getOutputFields(), new Debug(true))
+                        .each(new Fields("sentence"), new Split(), new Fields("word"))
                         .groupBy(new Fields("word"))
                         .persistentAggregate(new DebugMemoryMapState.Factory(), new Count(), new Fields("count"));
     }
